@@ -1,0 +1,12 @@
+{
+  "name": "ical-netlify-proxy",
+  "version": "1.0.0",
+  "description": "Netlify serverless function to proxy private iCal feeds",
+  "dependencies": {
+    "ical.js": "^1.5.0",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
