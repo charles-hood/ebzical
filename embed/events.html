@@ -368,10 +368,39 @@
       if (!event.start) return null;
       
       try {
-        // Use the already converted start time from FullCalendar
-        // The event.start should already be in Eastern time from our conversion
-        const startDate = new Date(event.start);
-        const endDate = event.end ? new Date(event.end) : null;
+        // Debug: Log the original event data
+        console.log('Modal event data:', {
+          start: event.start,
+          startStr: event.startStr,
+          end: event.end,
+          endStr: event.endStr
+        });
+        
+        // FullCalendar gives us the event.startStr in the timezone we set (local after conversion)
+        // Let's use the raw string format if available, otherwise fall back to Date object
+        let startDate, endDate;
+        
+        if (event.startStr && event.startStr.includes('T')) {
+          // Use the string representation which should be in correct timezone
+          startDate = new Date(event.startStr);
+        } else {
+          startDate = new Date(event.start);
+        }
+        
+        if (event.end) {
+          if (event.endStr && event.endStr.includes('T')) {
+            endDate = new Date(event.endStr);
+          } else {
+            endDate = new Date(event.end);
+          }
+        }
+        
+        console.log('Modal parsed dates:', {
+          startDate: startDate,
+          endDate: endDate,
+          startHours: startDate.getHours(),
+          startMinutes: startDate.getMinutes()
+        });
         
         // Check if it's an all-day event
         const isAllDay = event.allDay || 
@@ -388,7 +417,7 @@
           return startDate.toLocaleDateString('en-US', options);
         }
         
-        // Format assuming the date is already in Eastern time
+        // Format the time using local interpretation (should already be Eastern)
         const dateOptions = { 
           weekday: 'long', 
           year: 'numeric', 
@@ -404,7 +433,7 @@
         
         const dateStr = startDate.toLocaleDateString('en-US', dateOptions);
         
-        // Get the correct timezone abbreviation (EDT/EST) for the date
+        // Get the correct timezone abbreviation (EDT/EST) for the original date
         const easternTimeZone = getEasternTimezoneAbbr(startDate);
         const startTimeStr = startDate.toLocaleTimeString('en-US', timeOptions) + ' ' + easternTimeZone;
         
