@@ -271,12 +271,12 @@
       // Determine initial view based on URL parameter, then mobile detection
       let initialView;
       if (viewParam === 'list') {
-        initialView = 'listWeek';
+        initialView = 'next7days';
       } else if (viewParam === 'month') {
         initialView = 'dayGridMonth';
       } else {
         // Default behavior - mobile gets list, desktop gets month
-        initialView = isMobile ? 'listWeek' : 'dayGridMonth';
+        initialView = isMobile ? 'next7days' : 'dayGridMonth';
       }
       
       const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -285,7 +285,7 @@
         headerToolbar: {
           left: 'prev,next today',
           center: 'title',
-          right: isMobile ? 'listWeek' : 'dayGridMonth,listWeek'
+          right: isMobile ? 'next7days' : 'dayGridMonth,next7days'
         },
         // Custom loading and empty messages
         noEventsContent: 'Loading events...',
@@ -293,17 +293,25 @@
         listDayFormat: { weekday: 'long', month: 'short', day: 'numeric' },
         listDaySideFormat: false,
         views: {
-          listWeek: {
+          next7days: {
+            type: 'list',
             duration: { days: 7 },
-            visibleRange: function(currentDate) {
-              // Start from today, show next 7 days
-              const start = new Date();
-              const end = new Date();
-              end.setDate(start.getDate() + 6);
+            buttonText: 'List',
+            titleFormat: function() {
+              return 'Next 7 Days';
+            },
+            visibleRange: function() {
+              // Always start from today, show next 7 days
+              const today = new Date();
+              today.setHours(0, 0, 0, 0);
+              
+              const endDate = new Date(today);
+              endDate.setDate(today.getDate() + 6);
+              endDate.setHours(23, 59, 59, 999);
               
               return {
-                start: start,
-                end: end
+                start: today,
+                end: endDate
               };
             }
           }
@@ -615,7 +623,7 @@
       
       if (isMobile) {
         // Switch to list view on mobile
-        calendar.changeView('listWeek');
+        calendar.changeView('next7days');
         calendar.setOption('headerToolbar', {
           left: 'prev,next',
           center: 'title',
@@ -628,7 +636,7 @@
         calendar.setOption('headerToolbar', {
           left: 'prev,next today',
           center: 'title',
-          right: 'dayGridMonth,listWeek'
+          right: 'dayGridMonth,next7days'
         });
         calendar.setOption('aspectRatio', 1.5);
       }
