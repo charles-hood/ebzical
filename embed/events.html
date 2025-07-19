@@ -287,6 +287,27 @@
           center: 'title',
           right: isMobile ? 'listWeek' : 'dayGridMonth,listWeek'
         },
+        // Custom loading and empty messages
+        noEventsContent: 'Loading events...',
+        // List view configuration for "today forward" approach
+        listDayFormat: { weekday: 'long', month: 'short', day: 'numeric' },
+        listDaySideFormat: false,
+        views: {
+          listWeek: {
+            duration: { days: 7 },
+            visibleRange: function(currentDate) {
+              // Start from today, show next 7 days
+              const start = new Date();
+              const end = new Date();
+              end.setDate(start.getDate() + 6);
+              
+              return {
+                start: start,
+                end: end
+              };
+            }
+          }
+        },
         events: async function(fetchInfo, successCallback, failureCallback) {
           try {
             showLoading();
@@ -614,15 +635,16 @@
     }
     
     function showLoading() {
-      const calendarEl = document.getElementById('calendar');
-      const loadingEl = document.createElement('div');
-      loadingEl.id = 'calendar-loading';
-      loadingEl.className = 'calendar-loading';
-      loadingEl.innerHTML = `
-        <div class="loading-spinner"></div>
-        <p>Loading events...</p>
-      `;
-      calendarEl.appendChild(loadingEl);
+      // FullCalendar handles its own loading states, but we can enhance it
+      const loadingMsg = document.querySelector('.fc-list-empty, .fc-list-empty-wrap');
+      if (loadingMsg) {
+        loadingMsg.innerHTML = `
+          <div style="text-align: center; padding: 40px; color: #666;">
+            <div style="width: 30px; height: 30px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+            <p>Loading church events...</p>
+          </div>
+        `;
+      }
     }
     
     function hideLoading() {
