@@ -93,20 +93,21 @@
     }
     
     .more-info-button {
-      background: #3498db;
-      color: white;
-      text-decoration: none;
+      background: #3498db !important;
+      color: white !important;
+      text-decoration: none !important;
       padding: 8px 16px;
       border-radius: 4px;
       display: inline-block;
       font-size: 14px;
       margin-top: 10px;
+      font-weight: 500;
     }
     
     .more-info-button:hover {
-      background: #2980b9;
-      color: white;
-      text-decoration: none;
+      background: #2980b9 !important;
+      color: white !important;
+      text-decoration: none !important;
     }
     
     /* Loading state */
@@ -367,46 +368,49 @@
       if (!event.start) return null;
       
       try {
+        // Use the already converted start time from FullCalendar
+        // The event.start should already be in Eastern time from our conversion
         const startDate = new Date(event.start);
         const endDate = event.end ? new Date(event.end) : null;
         
         // Check if it's an all-day event
         const isAllDay = event.allDay || 
-                       (startDate.getUTCHours() === 0 && startDate.getUTCMinutes() === 0 && 
-                        endDate && endDate.getUTCHours() === 0 && endDate.getUTCMinutes() === 0);
+                       (startDate.getHours() === 0 && startDate.getMinutes() === 0 && 
+                        endDate && endDate.getHours() === 0 && endDate.getMinutes() === 0);
         
         if (isAllDay) {
           const options = { 
             weekday: 'long', 
             year: 'numeric', 
             month: 'long', 
-            day: 'numeric',
-            timeZone: 'America/New_York'
+            day: 'numeric'
           };
           return startDate.toLocaleDateString('en-US', options);
         }
         
-        // Format with explicit timezone
+        // Format assuming the date is already in Eastern time
         const dateOptions = { 
           weekday: 'long', 
           year: 'numeric', 
           month: 'long', 
-          day: 'numeric',
-          timeZone: 'America/New_York'
+          day: 'numeric'
         };
         
         const timeOptions = {
           hour: 'numeric',
           minute: '2-digit',
-          timeZone: 'America/New_York',
-          timeZoneName: 'short'
+          hour12: true
         };
         
         const dateStr = startDate.toLocaleDateString('en-US', dateOptions);
-        const startTimeStr = startDate.toLocaleTimeString('en-US', timeOptions);
+        
+        // Get the correct timezone abbreviation (EDT/EST) for the date
+        const easternTimeZone = getEasternTimezoneAbbr(startDate);
+        const startTimeStr = startDate.toLocaleTimeString('en-US', timeOptions) + ' ' + easternTimeZone;
         
         if (endDate && !isAllDay) {
-          const endTimeStr = endDate.toLocaleTimeString('en-US', timeOptions);
+          const endEasternTimeZone = getEasternTimezoneAbbr(endDate);
+          const endTimeStr = endDate.toLocaleTimeString('en-US', timeOptions) + ' ' + endEasternTimeZone;
           
           // Same day event
           if (startDate.toDateString() === endDate.toDateString()) {
@@ -539,6 +543,41 @@
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+    
+    function getEasternTimezoneAbbr(date) {
+      // Create a date in Eastern timezone to check if it's daylight time
+      const easternDate = new Date(date.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+      
+      // Check if daylight saving time is in effect
+      // DST typically runs from second Sunday in March to first Sunday in November
+      const year = date.getFullYear();
+      const month = date.getMonth(); // 0-11
+      
+      // Rough DST check (works for most cases)
+      // DST typically: March (after 2nd Sunday) through October (before 1st Sunday)
+      if (month >= 2 && month <= 10) { // March through October
+        if (month >= 3 && month <= 9) { // April through September = definitely DST
+          return 'EDT';
+        }
+        // For March and October, we need more precise checking
+        // For simplicity, let's use the browser's timezone detection
+        const testDate = new Date(date);
+        const easternOffset = testDate.toLocaleString('en-US', { 
+          timeZone: 'America/New_York', 
+          timeZoneName: 'short' 
+        });
+        
+        // Extract timezone from the formatted string
+        if (easternOffset.includes('EDT')) {
+          return 'EDT';
+        } else if (easternOffset.includes('EST')) {
+          return 'EST';
+        }
+      }
+      
+      // November through February = Standard Time
+      return 'EST';
     }
   </script>
 </body>
