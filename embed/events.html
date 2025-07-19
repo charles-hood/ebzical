@@ -295,16 +295,16 @@
         views: {
           next7days: {
             type: 'list',
-            duration: { days: 7 },
+            duration: { days: 6 },
             buttonText: 'List',
             titleFormat: { month: 'short', day: 'numeric', year: 'numeric' },
             visibleRange: function() {
-              // Always start from today, show next 7 days
+              // Always start from today, show next 6 days (today + 5)
               const today = new Date();
               today.setHours(0, 0, 0, 0);
               
               const endDate = new Date(today);
-              endDate.setDate(today.getDate() + 6);
+              endDate.setDate(today.getDate() + 5);
               endDate.setHours(23, 59, 59, 999);
               
               return {
