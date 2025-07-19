@@ -18,7 +18,7 @@ In Netlify dashboard:
 1. Go to **Site settings > Environment variables**
 2. Add variable:
    - **Key:** `ICAL_URL`
-   - **Value:** `https://ebz.onechurchsoftware.com/api/calendars/feed/83oxebAmvU5PJQWp4H4WrHywwZHCxjmSk7Rg==G8Mcb69uY45w7K8adgGCPf1xXy5Dwy/+F9DaXGVWGgQ==t7aqLeA2Q7q6Nw`
+   - **Value:** `REPLACE WITH YOUR VALUE`
 3. **Redeploy** site after adding the variable
 
 ### 3. Test
