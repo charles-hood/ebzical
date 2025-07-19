@@ -199,10 +199,17 @@
         min-height: 36px !important;
       }
       
+      /* Position modal higher on mobile */
+      .event-modal {
+        align-items: flex-start !important;
+        padding-top: 20px;
+      }
+      
       .event-modal-content {
         padding: 20px;
         margin: 20px;
         width: auto;
+        margin-top: 40px; /* Higher position on screen */
       }
       
       .event-modal h3 {
@@ -233,9 +240,16 @@
         display: none !important;
       }
       
+      /* Position modal even higher on very small screens */
+      .event-modal {
+        align-items: flex-start !important;
+        padding-top: 10px;
+      }
+      
       .event-modal-content {
         padding: 15px;
         margin: 10px;
+        margin-top: 20px; /* Even higher on very small screens */
       }
     }
   </style>
