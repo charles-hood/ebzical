@@ -297,9 +297,7 @@
             type: 'list',
             duration: { days: 7 },
             buttonText: 'List',
-            titleFormat: function() {
-              return 'Next 7 Days';
-            },
+            titleFormat: { month: 'short', day: 'numeric', year: 'numeric' },
             visibleRange: function() {
               // Always start from today, show next 7 days
               const today = new Date();
@@ -399,8 +397,19 @@
         },
         // Handle window resize for mobile responsiveness
         windowResize: function() {
-          handleMobileResize(calendar);
+          handleMobileResize(calendar, currentView);
         }
+      });
+      
+      // Track the user's chosen view
+      let currentView = initialView;
+      calendar.on('viewDidMount', function(info) {
+        currentView = info.view.type;
+      });
+      
+      // Update the resize handler to respect user's choice
+      window.addEventListener('resize', function() {
+        handleMobileResize(calendar, currentView);
       });
       
       try {
@@ -618,12 +627,11 @@
       };
     }
     
-    function handleMobileResize(calendar) {
+    function handleMobileResize(calendar, currentView) {
       const isMobile = window.innerWidth < 768;
       
       if (isMobile) {
-        // Switch to list view on mobile
-        calendar.changeView('next7days');
+        // Update toolbar for mobile but don't change view
         calendar.setOption('headerToolbar', {
           left: 'prev,next',
           center: 'title',
@@ -631,14 +639,18 @@
         });
         calendar.setOption('aspectRatio', 1.0);
       } else {
-        // Switch back to month view on desktop
-        calendar.changeView('dayGridMonth');
+        // Update toolbar for desktop but don't change view
         calendar.setOption('headerToolbar', {
           left: 'prev,next today',
           center: 'title',
           right: 'dayGridMonth,next7days'
         });
         calendar.setOption('aspectRatio', 1.5);
+      }
+      
+      // Only change view if it's not appropriate for the screen size
+      if (isMobile && currentView === 'dayGridMonth') {
+        calendar.changeView('next7days');
       }
     }
     
