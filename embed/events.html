@@ -1,0 +1,76 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Church Events Calendar</title>
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    #calendar {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="calendar"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const calendarEl = document.getElementById('calendar');
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,listWeek'
+        },
+        events: async function(fetchInfo, successCallback, failureCallback) {
+          try {
+            const res = await fetch('https://ebzchurch.netlify.app/.netlify/functions/events');
+            const data = await res.json();
+            const formattedEvents = data.map(e => ({
+              title: e.summary,
+              start: e.start,
+              end: e.end,
+              description: e.description,
+              location: e.location
+            }));
+            successCallback(formattedEvents);
+          } catch (error) {
+            console.error('Failed to load events:', error);
+            failureCallback(error);
+          }
+        },
+        eventClick: function(info) {
+          const event = info.event;
+          let content = `<strong>${event.title}</strong><br>`;
+          if (event.extendedProps.location) {
+            content += `📍 ${event.extendedProps.location}<br>`;
+          }
+          if (event.extendedProps.description) {
+            content += `<p>${event.extendedProps.description}</p>`;
+          }
+          alert(content);
+        },
+        eventTimeFormat: {
+          hour: 'numeric',
+          minute: '2-digit',
+          meridiem: 'short'
+        },
+        nowIndicator: true,
+        aspectRatio: 1.5,
+        height: 'auto'
+      });
+      calendar.render();
+    });
+  </script>
+</body>
+</html>
