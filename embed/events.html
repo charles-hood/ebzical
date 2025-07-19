@@ -261,9 +261,23 @@
     document.addEventListener('DOMContentLoaded', function () {
       const calendarEl = document.getElementById('calendar');
       
+      // Check URL parameters for view override
+      const urlParams = new URLSearchParams(window.location.search);
+      const viewParam = urlParams.get('view');
+      
       // Check if mobile and adjust view
       const isMobile = window.innerWidth < 768;
-      const initialView = isMobile ? 'listWeek' : 'dayGridMonth';
+      
+      // Determine initial view based on URL parameter, then mobile detection
+      let initialView;
+      if (viewParam === 'list') {
+        initialView = 'listWeek';
+      } else if (viewParam === 'month') {
+        initialView = 'dayGridMonth';
+      } else {
+        // Default behavior - mobile gets list, desktop gets month
+        initialView = isMobile ? 'listWeek' : 'dayGridMonth';
+      }
       
       const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: initialView,
