@@ -368,44 +368,45 @@
       if (!event.start) return null;
       
       try {
-        // Debug: Log the original event data
-        console.log('Modal event data:', {
-          start: event.start,
-          startStr: event.startStr,
-          end: event.end,
-          endStr: event.endStr
-        });
-        
-        // FullCalendar gives us the event.startStr in the timezone we set (local after conversion)
-        // Let's use the raw string format if available, otherwise fall back to Date object
-        let startDate, endDate;
+        // Parse the time directly from the startStr/endStr which have the correct Eastern time
+        let startHours, startMinutes, endHours, endMinutes;
+        let startDatePart, endDatePart;
         
         if (event.startStr && event.startStr.includes('T')) {
-          // Use the string representation which should be in correct timezone
-          startDate = new Date(event.startStr);
+          // Parse "2025-06-29T08:30:00" format
+          const [datePart, timePart] = event.startStr.split('T');
+          const [hours, minutes] = timePart.split(':');
+          startHours = parseInt(hours);
+          startMinutes = parseInt(minutes);
+          startDatePart = datePart;
         } else {
-          startDate = new Date(event.start);
+          // Fallback to Date object
+          const startDate = new Date(event.start);
+          startHours = startDate.getHours();
+          startMinutes = startDate.getMinutes();
+          startDatePart = startDate.toISOString().split('T')[0];
         }
         
-        if (event.end) {
-          if (event.endStr && event.endStr.includes('T')) {
-            endDate = new Date(event.endStr);
-          } else {
-            endDate = new Date(event.end);
-          }
+        if (event.end && event.endStr && event.endStr.includes('T')) {
+          const [datePart, timePart] = event.endStr.split('T');
+          const [hours, minutes] = timePart.split(':');
+          endHours = parseInt(hours);
+          endMinutes = parseInt(minutes);
+          endDatePart = datePart;
+        } else if (event.end) {
+          const endDate = new Date(event.end);
+          endHours = endDate.getHours();
+          endMinutes = endDate.getMinutes();
+          endDatePart = endDate.toISOString().split('T')[0];
         }
-        
-        console.log('Modal parsed dates:', {
-          startDate: startDate,
-          endDate: endDate,
-          startHours: startDate.getHours(),
-          startMinutes: startDate.getMinutes()
-        });
         
         // Check if it's an all-day event
         const isAllDay = event.allDay || 
-                       (startDate.getHours() === 0 && startDate.getMinutes() === 0 && 
-                        endDate && endDate.getHours() === 0 && endDate.getMinutes() === 0);
+                       (startHours === 0 && startMinutes === 0 && 
+                        endHours !== undefined && endHours === 0 && endMinutes === 0);
+        
+        // Create a proper date for formatting the date part
+        const displayDate = new Date(startDatePart + 'T12:00:00');
         
         if (isAllDay) {
           const options = { 
@@ -414,39 +415,35 @@
             month: 'long', 
             day: 'numeric'
           };
-          return startDate.toLocaleDateString('en-US', options);
+          return displayDate.toLocaleDateString('en-US', options);
         }
         
-        // Format the time using local interpretation (should already be Eastern)
+        // Format date
         const dateOptions = { 
           weekday: 'long', 
           year: 'numeric', 
           month: 'long', 
           day: 'numeric'
         };
+        const dateStr = displayDate.toLocaleDateString('en-US', dateOptions);
         
-        const timeOptions = {
-          hour: 'numeric',
-          minute: '2-digit',
-          hour12: true
-        };
+        // Format start time
+        const startAmPm = startHours >= 12 ? 'PM' : 'AM';
+        const startDisplayHours = startHours > 12 ? startHours - 12 : (startHours === 0 ? 12 : startHours);
+        const startTimeStr = `${startDisplayHours}:${startMinutes.toString().padStart(2, '0')} ${startAmPm} EDT`;
         
-        const dateStr = startDate.toLocaleDateString('en-US', dateOptions);
-        
-        // Get the correct timezone abbreviation (EDT/EST) for the original date
-        const easternTimeZone = getEasternTimezoneAbbr(startDate);
-        const startTimeStr = startDate.toLocaleTimeString('en-US', timeOptions) + ' ' + easternTimeZone;
-        
-        if (endDate && !isAllDay) {
-          const endEasternTimeZone = getEasternTimezoneAbbr(endDate);
-          const endTimeStr = endDate.toLocaleTimeString('en-US', timeOptions) + ' ' + endEasternTimeZone;
+        if (endHours !== undefined && !isAllDay) {
+          const endAmPm = endHours >= 12 ? 'PM' : 'AM';
+          const endDisplayHours = endHours > 12 ? endHours - 12 : (endHours === 0 ? 12 : endHours);
+          const endTimeStr = `${endDisplayHours}:${endMinutes.toString().padStart(2, '0')} ${endAmPm} EDT`;
           
           // Same day event
-          if (startDate.toDateString() === endDate.toDateString()) {
+          if (startDatePart === endDatePart) {
             return `${dateStr}<br>${startTimeStr} - ${endTimeStr}`;
           } else {
             // Multi-day event
-            const endDateStr = endDate.toLocaleDateString('en-US', dateOptions);
+            const endDisplayDate = new Date(endDatePart + 'T12:00:00');
+            const endDateStr = endDisplayDate.toLocaleDateString('en-US', dateOptions);
             return `${dateStr} ${startTimeStr}<br>to ${endDateStr} ${endTimeStr}`;
           }
         }
