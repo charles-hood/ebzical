@@ -139,21 +139,34 @@
       }
       
       #calendar {
-        margin: 10px auto;
+        margin: 5px auto;
         padding: 0 5px;
         box-shadow: none;
         border-radius: 0;
       }
       
       .fc-toolbar {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row !important;
+        gap: 5px !important;
+        margin-bottom: 0.5em !important;
+        align-items: center;
+        justify-content: space-between;
       }
       
       .fc-toolbar-title {
-        font-size: 1.4em !important;
+        font-size: 1.1em !important;
         text-align: center;
+        margin: 0 !important;
+        flex-grow: 1;
+        order: 0;
+      }
+      
+      .fc-toolbar-chunk:first-child {
         order: -1;
+      }
+      
+      .fc-toolbar-chunk:last-child {
+        order: 1;
       }
       
       .fc-button-group {
@@ -165,7 +178,25 @@
       .fc-prev-button,
       .fc-next-button {
         padding: 8px 12px !important;
-        font-size: 0.9em !important;
+        font-size: 0.85em !important;
+        min-height: 36px !important;
+      }
+      
+      /* Make navigation arrows slightly smaller but still touch-friendly */
+      .fc-prev-button .fc-icon,
+      .fc-next-button .fc-icon {
+        font-size: 1em;
+      }
+      
+      /* Hide view buttons on very small screens, keep just list view */
+      .fc-dayGridMonth-button {
+        display: none !important;
+      }
+      
+      .fc-listWeek-button {
+        padding: 8px 10px !important;
+        font-size: 0.8em !important;
+        min-height: 36px !important;
       }
       
       .event-modal-content {
@@ -180,8 +211,26 @@
     }
     
     @media (max-width: 480px) {
+      .fc-toolbar {
+        margin-bottom: 0.3em !important;
+      }
+      
       .fc-toolbar-title {
-        font-size: 1.2em !important;
+        font-size: 1.0em !important;
+      }
+      
+      .fc-today-button,
+      .fc-prev-button,
+      .fc-next-button,
+      .fc-listWeek-button {
+        padding: 6px 10px !important;
+        font-size: 0.8em !important;
+        min-height: 32px !important;
+      }
+      
+      /* Hide today button on very small screens to save space */
+      .fc-today-button {
+        display: none !important;
       }
       
       .event-modal-content {
